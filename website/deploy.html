@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, maximum-scale=1.5, user-scalable=1, initial-scale=1.0"
+    />
+
+    <title>NFT</title>
+
+    <script src="https://unpkg.com/@metamask/detect-provider/dist/detect-provider.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="application/javascript"></script>
+    <script src="/contract-metadata.js" type="application/javascript"></script>
+
+    <script type="text/javascript">
+      function enable() {
+        return detectEthereumProvider().then(provider => {
+          return provider.enable().then(() => {
+            window.ethProvider = new ethers.providers.Web3Provider(provider);
+            window.ethProvider.on("chainChanged", (chainId) => { window.location.reload() });
+            window.ethProvider.on("accountsChanged", () => { window.location.reload() });
+            window.ethSigner = window.ethProvider.getSigner();
+          }).catch(err => {
+            console.log(err);
+            alert('Cound not connect to your wallet: ' + err.message);
+          });
+        }).catch(err => {
+          console.log(err);
+          alert('Could not connect to your wallet: ' + err.message);
+        });
+      }
+
+      function mint() {
+        const codes = document.getElementById('code').value.split(",");
+        const hashes = codes.map((c) => { return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(c.trim())) });
+        console.log(hashes);
+        window.TokenContract.mintMany(hashes).then(tx => {
+          alert('Transaction published. please wait for the transaction to get confirmed');
+          tx.wait().then(() => {
+            alert('Transaction mined. Check out the token in Opensea');
+            window.TokenContract.totalSupply().then(supply => {
+              for (var i = 1; i <= supply.toNumber(); i++) {
+                const link = document.createElement('a');
+                link.href = "https://opensea.io/assets/" + window.TokenContract.address + "/" + i;
+                link.innerHTML = link.href;
+                const li = document.createElement('li');
+                li.append(link);
+                document.getElementById('opensea-links').append(li);
+              }
+            });
+          });
+        });
+      }
+
+      function deploy() {
+        enable().then(() => {
+          const maxTokens = parseInt(document.getElementById('max-tokens').value);
+          const ipfsDirectory = document.getElementById('ipfs-directory').value;
+          const name = document.getElementById('name').value;
+          const symbol = document.getElementById('symbol').value;
+
+          const TokenFactory = new ethers.ContractFactory(window.TokenMetadata.abi, window.TokenMetadata.bytecode, window.ethSigner)
+          TokenFactory.deploy(maxTokens, ipfsDirectory, name, symbol).then(contract => {
+            alert('Contract deployed, address: ' + contract.address);
+            document.getElementById('address').innerHTML = contract.address;
+            document.getElementById('mint').style.display = "block";
+
+            window.TokenContract = new ethers.Contract(
+              contract.address,
+              window.TokenMetadata.abi,
+              window.ethSigner
+            );
+          });
+        });
+      }
+    </script>
+  </head>
+  <body>
+
+    <p>
+      Max tokens: <input type="text" id="max-tokens">
+    </p>
+    <p>
+      IPFS directory: <input type="text" id="ipfs-directory">
+    </p>
+    <p>
+      Name: <input type="text" id="name">
+    </p>
+    <p>
+      Symbol: <input type="text" id="symbol">
+    </p>
+
+    <button onclick="deploy()">
+      Deploy
+    </button>
+
+    <hr>
+    <p>
+      Contract address:
+      <span id="address"></span>
+    </p>
+    <hr>
+
+    <div id="mint" style="display:none">
+      <p>
+        Code: <input type="text" id="code">
+      </p>
+      <button onclick="mint()">
+        Mint
+      </button>
+      <ul id="opensea-links"></ul>
+    </div>
+  </body>
+</html>
