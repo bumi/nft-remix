@@ -29,4 +29,4 @@
 * Configure the contract address
 * If the contract is changed update the website/contract-metadata.js file
   * The `artifacts/contracts/Token.sol/Token.json` needs to be in the  `window.TokenMetadata` variable. (see current file for an example)
-  * run locally: `python -m SimpleHTTPServer`
+* run locally: `python -m SimpleHTTPServer`
