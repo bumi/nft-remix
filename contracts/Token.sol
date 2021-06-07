@@ -34,6 +34,12 @@ contract Token is ERC721Enumerable, Ownable {
         tokenHashes[hash_] = newId;
     }
 
+    function checkCode(string memory code_) public view returns (bool) {
+        bytes32 hash = keccak256(abi.encodePacked(code_));
+        uint tokenId = tokenHashes[hash];
+        return tokenId != 0;
+    }
+
     function claim(string memory code_) public returns (uint tokenId) {
         bytes32 hash = keccak256(abi.encodePacked(code_));
         tokenId = tokenHashes[hash];
