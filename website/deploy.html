@@ -59,12 +59,12 @@
       function deploy() {
         enable().then(() => {
           const maxTokens = parseInt(document.getElementById('max-tokens').value);
-          const ipfsDirectory = document.getElementById('ipfs-directory').value;
+          const metadataBaseUri = document.getElementById('metadate-base-uri').value;
           const name = document.getElementById('name').value;
           const symbol = document.getElementById('symbol').value;
 
           const TokenFactory = new ethers.ContractFactory(window.TokenMetadata.abi, window.TokenMetadata.bytecode, window.ethSigner)
-          TokenFactory.deploy(maxTokens, ipfsDirectory, name, symbol).then(contract => {
+          TokenFactory.deploy(maxTokens, metadataBaseUri, name, symbol).then(contract => {
             alert('Contract deployed, address: ' + contract.address);
             document.getElementById('address').innerHTML = contract.address;
             document.getElementById('mint').style.display = "block";
@@ -85,7 +85,9 @@
       Max tokens: <input type="text" id="max-tokens">
     </p>
     <p>
-      IPFS directory: <input type="text" id="ipfs-directory">
+      Metadata Base URI: <input type="text" id="metadata-base-uri" placeholder="https://dweb.link/ipfs/.../">
+      <br>
+      Must end with a <i>/</i> the tokenID will be appended to generate the token URI.
     </p>
     <p>
       Name: <input type="text" id="name">

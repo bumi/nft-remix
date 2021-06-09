@@ -10,13 +10,13 @@ contract Token is ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    string private ipfsDirectory;
+    string private metadataBaseUri;
     uint public maxTokens;
     mapping (bytes32 => uint256) private tokenHashes;
 
-    constructor(uint maxTokens_, string memory ipfsDirectory_, string memory name_, string memory symbol_) ERC721(name_, symbol_) {
-        ipfsDirectory = ipfsDirectory_;
+    constructor(uint maxTokens_, string memory metadataBaseUri_, string memory name_, string memory symbol_) ERC721(name_, symbol_) {
         maxTokens = maxTokens_;
+        metadataBaseUri = metadataBaseUri_;
     }
 
     function mintMany(bytes32[] memory hashes_) public onlyOwner {
@@ -49,7 +49,7 @@ contract Token is ERC721Enumerable, Ownable {
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return string(abi.encodePacked("https://dweb.link/ipfs/", ipfsDirectory, "/"));
+        return metadataBaseUri;
     }
 
 }
